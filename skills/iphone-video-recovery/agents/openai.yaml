@@ -1,0 +1,4 @@
+interface:
+  display_name: "iPhone Video Recovery"
+  short_description: "Recover interrupted iPhone recordings from backups"
+  default_prompt: "Use $iphone-video-recovery to find and recover interrupted recordings from my iPhone backup, then export verified copies to my chosen drive."

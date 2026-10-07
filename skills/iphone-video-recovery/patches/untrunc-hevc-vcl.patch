@@ -1,0 +1,40 @@
+SPDX-License-Identifier: GPL-2.0-or-later
+Target: anthwlock/untrunc 9d86ec9ef2ffed1bf8131abe80742c0574db52b6
+
+diff --git a/src/hvc1/hvc1.cpp b/src/hvc1/hvc1.cpp
+index 5d11128..1a09a11 100644
+--- a/src/hvc1/hvc1.cpp
++++ b/src/hvc1/hvc1.cpp
+@@ -38,8 +38,8 @@ LenResult getLengths(Codec* self, const uchar* start, uint maxlength) {
+ 
+ 		if (h265IsSlice(nal_info.nal_type_)) {
+ 			H265SliceInfo slice_info(nal_info);
+-			if (previous_nal.is_ok) {
+-				if (seen_slice && slice_info.isInNewFrame()) return r;
++			if (previous_nal.is_ok && seen_slice) {
++				if (slice_info.isInNewFrame()) return r;
+ 				if (previous_nal.nuh_layer_id_ != nal_info.nuh_layer_id_){
+ 					logg(W, "Different nuh_layer_id_ idc\n");
+ 					return r;
+diff --git a/src/hvc1/nal.cpp b/src/hvc1/nal.cpp
+index 0fdab2e..911349f 100644
+--- a/src/hvc1/nal.cpp
++++ b/src/hvc1/nal.cpp
+@@ -12,14 +12,9 @@ H265NalInfo::H265NalInfo(const uchar* start, int max_size) {
+ }
+ 
+ bool h265IsSlice(int nal_type) {
+-	return
+-	    nal_type == NAL_TRAIL_N ||
+-	    nal_type == NAL_TRAIL_R ||
+-	    nal_type == NAL_CRA_NUT ||
+-	    nal_type == NAL_RASL_N ||
+-	    nal_type == NAL_RASL_R ||
+-	    nal_type == NAL_IDR_N_LP ||
+-	    nal_type == NAL_IDR_W_RADL;
++	// TSA/STSA/RADL pictures are VCL slices too, including iPhone B frames.
++	return (nal_type >= 0 && nal_type <= 9) ||
++	       (nal_type >= 16 && nal_type <= 21);
+ }
+ 
+ bool h265IsKeyframe(int nal_type) {
